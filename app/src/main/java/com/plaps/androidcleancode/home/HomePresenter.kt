@@ -7,13 +7,16 @@ import com.plaps.androidcleancode.networking.Service
 import com.plaps.androidcleancode.persistence.CitiesDatabase
 import com.plaps.androidcleancode.persistence.City
 import com.plaps.androidcleancode.persistence.LocalCityDataSource
+import io.reactivex.disposables.CompositeDisposable
 import rx.subscriptions.CompositeSubscription
+
 
 /**
  * Created by ennur on 6/25/16.
  */
 class HomePresenter(private val service: Service, private val view: HomeView) {
     private val subscriptions: CompositeSubscription = CompositeSubscription()
+    private val compositeDisposable: CompositeDisposable = CompositeDisposable()
 
     fun getCityList() {
         view.showWait()
@@ -39,14 +42,15 @@ class HomePresenter(private val service: Service, private val view: HomeView) {
         val database = CitiesDatabase.getInstance(view.getContext())
         val dataSource = LocalCityDataSource(database.cityDao())
 
-        dataSource.cities.map { cities ->
-            val uiCities : MutableList<CityListData> = ArrayList()
+        compositeDisposable.add(dataSource.cities.map { cities ->
+            val uiCities: MutableList<CityListData> = ArrayList()
             for (city in cities) {
                 uiCities.add(CityListData(city.id, city.name, city.description, city.background))
             }
             view.removeWait()
             view.getCityListSuccess(uiCities)
         }.subscribe()
+        )
 
     }
 
@@ -64,6 +68,8 @@ class HomePresenter(private val service: Service, private val view: HomeView) {
 
     fun onStop() {
         subscriptions.unsubscribe()
-
+        if (!compositeDisposable.isDisposed()) {
+            compositeDisposable.clear()
+        }
     }
 }
