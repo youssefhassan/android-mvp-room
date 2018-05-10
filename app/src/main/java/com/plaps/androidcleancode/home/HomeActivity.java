@@ -1,5 +1,7 @@
 package com.plaps.androidcleancode.home;
 
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -9,9 +11,14 @@ import android.widget.Toast;
 
 import com.plaps.androidcleancode.BaseApp;
 import com.plaps.androidcleancode.R;
+import com.plaps.androidcleancode.detail.DetailActivity;
 import com.plaps.androidcleancode.models.CityListData;
 import com.plaps.androidcleancode.models.CityListResponse;
 import com.plaps.androidcleancode.networking.Service;
+
+import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -21,6 +28,7 @@ public class HomeActivity extends BaseApp implements HomeView {
     @Inject
     public  Service service;
     ProgressBar progressBar;
+    private HomePresenter presenter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -30,7 +38,7 @@ public class HomeActivity extends BaseApp implements HomeView {
         renderView();
         init();
 
-        HomePresenter presenter = new HomePresenter(service, this);
+        presenter = new HomePresenter(service, this);
         presenter.getCityList();
     }
 
@@ -56,22 +64,29 @@ public class HomeActivity extends BaseApp implements HomeView {
 
     @Override
     public void onFailure(String appErrorMessage) {
-
     }
 
     @Override
-    public void getCityListSuccess(CityListResponse cityListResponse) {
-
-        HomeAdapter adapter = new HomeAdapter(getApplicationContext(), cityListResponse.getData(),
-                new HomeAdapter.OnItemClickListener() {
-                    @Override
-                    public void onClick(CityListData Item) {
-                        Toast.makeText(getApplicationContext(), Item.getName(),
-                                Toast.LENGTH_LONG).show();
-                    }
-                });
+    public void getCityListSuccess(List<CityListData> cityListResponse) {
+        HomeAdapter adapter = new HomeAdapter(getApplicationContext(), cityListResponse,
+            item -> {
+                Intent intent = new Intent(HomeActivity.this, DetailActivity.class);
+                intent.putExtra("city_item", item);
+                startActivity(intent);
+            });
 
         list.setAdapter(adapter);
+    }
 
+    @Nullable
+    @Override
+    public Context getContext() {
+        return null;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        presenter.onStop();
     }
 }

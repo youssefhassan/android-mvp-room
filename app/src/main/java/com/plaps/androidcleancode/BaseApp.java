@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.plaps.androidcleancode.deps.DaggerDeps;
 import com.plaps.androidcleancode.deps.Deps;
 import com.plaps.androidcleancode.networking.NetworkModule;
+import com.plaps.androidcleancode.persistence.CitiesDatabase;
 
 import java.io.File;
 
@@ -21,6 +22,7 @@ public class BaseApp  extends AppCompatActivity{
         File cacheFile = new File(getCacheDir(), "responses");
         deps = DaggerDeps.builder().networkModule(new NetworkModule(cacheFile)).build();
 
+        CitiesDatabase.getInstance(this);
     }
 
     public Deps getDeps() {

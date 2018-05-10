@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Clean Android Code</string>
+    <string name="city">City:</string>
+    <string name="number_of_hotels">Number of hotels:</string>
 </resources>
